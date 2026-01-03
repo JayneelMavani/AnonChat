@@ -3,6 +3,7 @@
 import { client } from "@/lib/client";
 import { useMutation } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "chat_username";
@@ -23,11 +24,7 @@ const generateUsername = async () => {
 
 export default function Home() {
   const [username, setUsername] = useState<string>("");
-
-  // const updateUsername = async () => {
-  //   const newUsername = await generateUsername();
-  //   setUsername(newUsername || '');
-  // };
+  const router = useRouter();
 
   const genAndStoreUsername = async () => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -51,6 +48,10 @@ export default function Home() {
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
       const res = await client.room.create.post();
+
+      if (res.status === 200) {
+        router.push(`/room/${res.data?.roomId}`);
+      }
     }
   });
 
