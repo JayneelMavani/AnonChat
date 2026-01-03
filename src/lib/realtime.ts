@@ -3,8 +3,8 @@ import { redis } from "@/lib/redis";
 import z from "zod";
 
 const message = z.object({
-    id: z.object(),
-    sendError: z.string(),
+    id: z.string(),
+    sender: z.string(),
     text: z.string(),
     timestamp: z.number(),
     roomId: z.string(),
