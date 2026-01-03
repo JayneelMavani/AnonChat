@@ -3,7 +3,6 @@ import { Elysia, t } from 'elysia';
 import { nanoid } from 'nanoid';
 import { authMiddlware } from './auth';
 import { z } from 'zod';
-import { error } from 'console';
 
 const roomTtlSec = 60 * 10;
 
