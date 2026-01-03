@@ -48,7 +48,7 @@ export default function Home() {
     genAndStoreUsername();
   }, []);
 
-  const { } = useMutation({
+  const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
       const res = await client.room.create.post();
     }
@@ -77,7 +77,7 @@ export default function Home() {
 
             </div>
 
-            <button className="w-full bg-zinc-100 text-black p-3 text-sm font-bold hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50">
+            <button onClick={() => createRoom()} className="w-full bg-zinc-100 text-black p-3 text-sm font-bold hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50">
               CREATE SECURE ROOM
             </button>
           </div>
