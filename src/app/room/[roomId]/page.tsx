@@ -1,3 +1,11 @@
+/**
+ * @module app/room/[roomId]/page
+ *
+ * @see {@link ../../lib/client.ts} - API client for server communication
+ * @see {@link ../../lib/realtime-client.ts} - Real-time event subscription
+ * @see {@link ../../hooks/useUsername.ts} - Username generation hook
+ */
+
 "use client";
 
 import { useUsername } from "@/hooks/useUsername";
@@ -8,6 +16,10 @@ import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { useRealtime } from "@/lib/realtime-client";
 
+/**
+ * @param {number} seconds - Total seconds remaining
+ * @returns {string} Formatted time string (e.g., "5:30", "0:05")
+ */
 const formatTimeRemaining = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = (seconds % 60);
@@ -26,6 +38,16 @@ const Page = () => {
     const [input, setInput] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
 
+    /**
+     * Fetches all messages for the current room.
+     * Automatically refetched when `chat.message` realtime events are received.
+     *
+     * @property {Message[]} data.messages - Array of messages with sender, text, and timestamp
+     * @property {Function} refetch - Function to manually trigger a message refresh
+     *
+     * @see {@link client.messages.get} - API endpoint called by this query
+     * @see {@link useRealtime} - Triggers refetch on `chat.message` events (line 98)
+     */
     const { data: messages, refetch } = useQuery({
         queryKey: ["messages", roomId],
         queryFn: async () => {
@@ -35,6 +57,15 @@ const Page = () => {
         }
     });
 
+    /**
+     * Fetches the remaining ttl for the current room.
+     *
+     * @property {number} data.ttl - Remaining seconds until room expires
+     *
+     * @see {@link client.room.ttl.get} - API endpoint called by this query
+     * @see {@link timeRemaining} - State initialized from this data (line 70)
+     * @see {@link formatTimeRemaining} - Formats TTL for display
+     */
     const { data: ttlData } = useQuery({
         queryKey: ["ttl", roomId],
         queryFn: async () => {
@@ -44,10 +75,29 @@ const Page = () => {
         }
     });
 
+    /**
+     * Syncs the server ttl value to local state when data is fetched.
+     *
+     * @see {@link ttlData} - Query data source for initial TTL value
+     * @see {@link timeRemaining} - Local state updated by this effect
+     */
     useEffect(() => {
         if (ttlData?.ttl !== undefined) setTimeRemaining(ttlData.ttl);
     }, [ttlData]);
 
+    /**
+     * Countdown timer effect that decrements `timeRemaining` every second.
+     * Handles room expiration by redirecting to the home page when the timer reaches zero.
+     *
+     * Behavior:
+     * - Exits early if `timeRemaining` is null or negative
+     * - Redirects to `/?destroyed=true` when timer hits 0
+     * - Decrements counter every 1000ms via setInterval
+     * - Cleans up interval on unmount or dependency change
+     *
+     * @see {@link timeRemaining} - State being decremented
+     * @see {@link formatTimeRemaining} - Formats the value for display in header
+     */
     useEffect(() => {
         if (timeRemaining === null || timeRemaining < 0) return;
         if (timeRemaining === 0) {
@@ -69,6 +119,18 @@ const Page = () => {
         return () => clearInterval(interval);
     }, [timeRemaining, router]);
 
+    /**
+     * Mutation to send a new message to the current room.
+     *
+     * @param {Object} params - Mutation parameters
+     * @param {string} params.text - The message text to send
+     * @property {Function} mutate - Aliased as `sendMessage`, triggers the mutation
+     * @property {boolean} isPending - True while the message is being sent
+     *
+     * @see {@link client.messages.post} - API endpoint called by this mutation
+     * @see {@link username} - Sender name from useUsername hook
+     * @see SEND button - Triggers this mutation (line 225)
+     */
     const { mutate: sendMessage, isPending } = useMutation({
         mutationFn: async ({ text }: { text: string; }) => {
             await client.messages.post({ sender: username, text }, { query: { roomId } });
@@ -77,6 +139,17 @@ const Page = () => {
         }
     });
 
+    /**
+     * Handles incoming events to update the UI in real-time.
+     *
+     * Event handlers:
+     * - `chat.message`: Triggers a refetch of the messages query to display new messages
+     * - `chat.destroy`: Redirects to home page when the room is destroyed by any user
+     *
+     * @see {@link ../../lib/realtime-client.ts} - Source of the useRealtime hook
+     * @see {@link refetch} - Called on `chat.message` to refresh the message list
+     * @see {@link destroyRoom} - Mutation that triggers `chat.destroy` event server-side
+     */
     useRealtime({
         channels: [roomId],
         events: ["chat.message", "chat.destroy"],
@@ -86,12 +159,26 @@ const Page = () => {
         }
     });
 
+    /**
+     * Mutation to manually destroy the current room.
+     * The server emits a `chat.destroy` event before deletion, notifying all connected clients.
+     *
+     * @property {Function} mutate - Aliased as `destroyRoom`, triggers the mutation
+     *
+     * @see {@link client.room.delete} - API endpoint called by this mutation
+     * @see DESTROY NOW button - Triggers this mutation (line 172)
+     * @see {@link useRealtime} - Handles `chat.destroy` event to redirect users
+     */
     const { mutate: destroyRoom } = useMutation({
         mutationFn: async () => {
             await client.room.delete(null, { query: { roomId } });
         }
     });
 
+    /**
+     * @see {@link copyStatus} - State that controls the button text ("COPY" or "COPIED!")
+     * @see COPY button - Triggers this function (line 166)
+     */
     const copyLink = () => {
         const url = window.location.href;
         navigator.clipboard.writeText(url);
@@ -149,30 +236,28 @@ const Page = () => {
                 </div>)
             }
 
-            {
-                messages?.messages.map((message) => (
-                    <div key={message.id} className="flex flex-col items-start">
-                        <div className="max-w-[80%] group">
+            {messages?.messages.map((message) => (
+                <div key={message.id} className="flex flex-col items-start">
+                    <div className="max-w-[80%] group">
 
-                            <div className="flex items-baseline gap-3 mb-1">
-                                <span className={
-                                    `text-xs font-bold ${message.sender === username
-                                        ? "text-green-500"
-                                        : "text-blue-500"}`
-                                }>
-                                    {message.sender === username ? "YOU" : message.sender}
-                                </span>
+                        <div className="flex items-baseline gap-3 mb-1">
+                            <span className={
+                                `text-xs font-bold ${message.sender === username
+                                    ? "text-green-500"
+                                    : "text-blue-500"}`
+                            }>
+                                {message.sender === username ? "YOU" : message.sender}
+                            </span>
 
-                                <span className="text-[10px] text-zinc-600">
-                                    {format(message.timestamp, 'HH:mm')}
-                                </span>
-                            </div>
-
-                            <p className="text-sm text-zinc-300 leading-relaxed break-all">{message.text}</p>
+                            <span className="text-[10px] text-zinc-600">
+                                {format(message.timestamp, 'HH:mm')}
+                            </span>
                         </div>
+
+                        <p className="text-sm text-zinc-300 leading-relaxed break-all">{message.text}</p>
                     </div>
-                ))
-            }
+                </div>
+            ))}
         </div>
 
         <div className="p-4 border-t border-zinc-800 bg-zinc-900/30">

@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Home page / lobby for the anonymous chat application.
+ *
+ * @module app/page
+ *
+ * ## URL Parameters
+ * - `?destroyed=true` - Shows notification that the previous room was destroyed
+ * - `?error=room-not-found` - Shows error when attempting to join a non-existent room
+ * - `?error=room-full` - Shows error when room has reached max capacity
+ *
+ * @see {@link ./room/[roomId]/page.tsx} - Chat room page navigated to after creation
+ * @see {@link ../hooks/useUsername.ts} - Username generation hook
+ * @see {@link ../lib/client.ts} - API client for room creation
+ */
+
 "use client";
 
 import { useUsername } from "@/hooks/useUsername";
@@ -6,6 +21,11 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
+/**
+ * Root page component wrapped in Suspense for useSearchParams support.
+ *
+ * @returns {JSX.Element} Suspense-wrapped Lobby component
+ */
 const Page = () => {
   return (
     <Suspense>
@@ -14,6 +34,14 @@ const Page = () => {
   );
 };
 
+/**
+ * Displays:
+ * - Notification banners for destroyed rooms or errors
+ * - User's anonymous identity (generated username)
+ * - Button to create a new secure chat room
+ *
+ * @returns {JSX.Element} The lobby interface
+ */
 function Lobby() {
   const { username } = useUsername();
   const router = useRouter();
@@ -22,6 +50,12 @@ function Lobby() {
   const wasDestroyed = searchParams.get("destroyed") === "true";
   const error = searchParams.get("error");
 
+  /**
+   * Mutation to create a new chat room.
+   * On success, navigates to the newly created room.
+   *
+   * @see {@link client.room.create.post} - API endpoint for room creation
+   */
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
       const res = await client.room.create.post();

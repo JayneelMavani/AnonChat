@@ -136,6 +136,44 @@ To learn more about the technologies used:
 - [Upstash Redis](https://upstash.com/docs/redis/overall/getstarted)
 - [Upstash Realtime](https://upstash.com/docs/realtime/overall/getstarted)
 
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── page.tsx                    # Home/lobby page - create rooms
+│   ├── layout.tsx                  # Root layout with providers
+│   ├── room/
+│   │   └── [roomId]/
+│   │       └── page.tsx            # Chat room interface
+│   └── api/
+│       ├── [[...slugs]]/
+│       │   ├── route.ts            # REST API (rooms, messages)
+│       │   └── auth.ts             # Authentication middleware
+│       └── realtime/
+│           └── route.ts            # SSE endpoint for realtime events
+├── components/
+│   └── provider.tsx                # React context providers
+├── hooks/
+│   └── useUsername.ts              # Anonymous username generation
+├── lib/
+│   ├── client.ts                   # Type-safe API client (Eden Treaty)
+│   ├── redis.ts                    # Upstash Redis client
+│   ├── realtime.ts                 # Realtime event schema & instance
+│   └── realtime-client.ts          # Client-side realtime hook
+└── proxy.ts                        # Middleware for room access control
+```
+
+### Key Modules
+
+| Module | Description |
+|--------|-------------|
+| `lib/realtime.ts` | Defines the realtime event schema (`chat.message`, `chat.destroy`) and exports the configured Upstash Realtime instance |
+| `lib/client.ts` | Type-safe API client using Eden Treaty, inferred from the Elysia app type |
+| `hooks/useUsername.ts` | Generates and persists anonymous usernames using Datamuse API |
+| `api/[[...slugs]]/route.ts` | Main API routes for room CRUD and messaging |
+| `api/realtime/route.ts` | SSE endpoint for real-time event streaming |
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).

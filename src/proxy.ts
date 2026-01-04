@@ -1,16 +1,9 @@
 /**
  * Room Access Proxy Middleware
  * 
- * This module handles authentication and access control for chat rooms.
- * It runs as middleware for all /room/* routes and manages:
- * - Room existence validation
- * - User authentication via cookies
- * - Room capacity enforcement
- * - Token generation for new users
- * 
- * @see src/app/api/[[...slugs]]/auth.ts - Reads the x-auth-token cookie for API auth
- * @see src/app/api/[[...slugs]]/route.ts - Creates rooms and stores metadata in Redis
- * @see README.md - Configuration docs for changing room member limits
+ * @see {@link src/app/api/[[...slugs]]/auth.ts} - Reads the x-auth-token cookie for API auth
+ * @see {@link src/app/api/[[...slugs]]/route.ts} - Creates rooms and stores metadata in Redis
+ * @see {@link ../README.md} - Configuration docs for changing room member limits
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -56,8 +49,6 @@ export const proxy = async (req: NextRequest) => {
     const token = nanoid();
 
     /**
-     * Set authentication cookie for room access.
-     * This token is validated by the API auth middleware.
      * @see src/app/api/[[...slugs]]/auth.ts
      */
     response.cookies.set("x-auth-token", token, {
@@ -67,7 +58,9 @@ export const proxy = async (req: NextRequest) => {
         sameSite: "strict"
     });
 
-    // Add user to room's connected list in Redis
+    /**
+     * @see src/app/api/[[...slugs]]/auth.ts
+     */
     await redis.hset(`meta:${roomId}`, {
         connected: [...meta.connected, token],
         createdAt: meta.createdAt,
