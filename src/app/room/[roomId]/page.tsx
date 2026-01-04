@@ -3,7 +3,7 @@
 import { useUsername } from "@/hooks/useUsername";
 import { client } from "@/lib/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { format } from "date-fns";
 import { useRealtime } from "@/lib/realtime-client";
@@ -17,6 +17,8 @@ const formatTimeRemaining = (seconds: number) => {
 const Page = () => {
     const params = useParams();
     const roomId = params.roomId as string;
+
+    const router = useRouter();
 
     const { username } = useUsername();
     const [copyStatus, setCopyStatus] = useState("COPY");
@@ -44,7 +46,10 @@ const Page = () => {
     useRealtime({
         channels: [roomId],
         events: ["chat.message", "chat.destroy"],
-        onData: ({ event }) => { if (event === "chat.message") refetch(); }
+        onData: ({ event }) => {
+            if (event === "chat.message") refetch();
+            if (event === "chat.destroy") router.push("/?destroyed=true");
+        }
     });
 
     const copyLink = () => {
