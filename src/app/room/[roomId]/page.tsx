@@ -5,6 +5,7 @@ import { client } from "@/lib/client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
+import { format } from "date-fns";
 
 const formatTimeRemaining = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -95,6 +96,7 @@ const Page = () => {
                 messages?.messages.map((message) => (
                     <div key={message.id} className="flex flex-col items-start">
                         <div className="max-w-[80%] group">
+
                             <div className="flex items-baseline gap-3 mb-1">
                                 <span className={
                                     `text-xs font-bold ${message.sender === username
@@ -103,8 +105,13 @@ const Page = () => {
                                 }>
                                     {message.sender === username ? "YOU" : message.sender}
                                 </span>
-                                {message.text}
+
+                                <span className="text-[10px] text-zinc-600">
+                                    {format(message.timestamp, 'HH:mm')}
+                                </span>
                             </div>
+
+                            <p className="text-sm text-zinc-300 leading-relaxed break-all">{message.text}</p>
                         </div>
                     </div>
                 ))
