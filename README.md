@@ -12,14 +12,19 @@ A self-destructing anonymous chat room application built with Next.js, Upstash R
 
 ## Environment Variables
 
-Create a `.env` file in the root directory with the following variables:
+Copy the example environment file and fill in your credentials:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
 
 ```env
 UPSTASH_REDIS_REST_URL=your_redis_rest_url
 UPSTASH_REDIS_REST_TOKEN=your_redis_rest_token
 ```
 
-Upstash Redis (Required)
 Get these from: https://console.upstash.com/redis
 
 ## Configuration
@@ -81,6 +86,47 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Docker
+
+### Build the Image
+
+```bash
+docker build -t anon-chat .
+```
+
+### Run the Container
+
+```bash
+docker run -p 3000:3000 \
+  -e UPSTASH_REDIS_REST_URL=your_redis_rest_url \
+  -e UPSTASH_REDIS_REST_TOKEN=your_redis_rest_token \
+  anon-chat
+```
+
+### Using Docker Compose
+
+A `docker-compose.yaml` is included with health checks configured.
+
+First, set up your environment:
+
+```bash
+cp .env.example .env
+# Edit .env with your Upstash credentials
+```
+
+Then run:
+
+```bash
+# Start the container
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop the container
+docker compose down
+```
 
 ## Learn More
 
