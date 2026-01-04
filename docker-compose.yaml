@@ -1,14 +1,26 @@
+# Usage:
+#   1. Copy .env.example to .env and add your Upstash credentials
+#   2. Run: docker compose up -d
+#   3. View logs: docker compose logs -f
+#   4. Stop: docker compose down
 services:
   app:
+    # Build from local Dockerfile
     build: .
+    # Map container port 3000 to host port 3000
     ports:
       - "3000:3000"
+    # Environment variables loaded from .env file
+    # See .env.example for required variables
     environment:
       - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}
       - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}
+    # Restart policy: always restart unless manually stopped
     restart: unless-stopped
+    # Health check to monitor container status
+    # Pings the app every 30 seconds to ensure it's responsive
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:3000" ]
+      interval: 30s # Check every 30 seconds
+      timeout: 10s # Wait up to 10 seconds for response
+      retries: 3 # Mark unhealthy after 3 consecutive failures
