@@ -48,14 +48,6 @@ const Page = () => {
 };
 
 /**
-<<<<<<< HEAD
- * Displays:
- * - Notification banners for destroyed rooms or errors
- * - User's anonymous identity (generated username)
- * - Button to create a new secure chat room
- *
- * @returns {JSX.Element} The lobby interface
-=======
  * Lobby component: The main interface for users to enter the chat application.
  * Displays the user's identity (generated anonymously), allows creating a new secure room,
  * and shows error messages based on URL search parameters (e.g., room destroyed, not found, or full).
@@ -65,7 +57,6 @@ const Page = () => {
  * - useRouter: For programmatic navigation to the created room.
  * - useSearchParams: To read error states from the URL (e.g., after redirection).
  * - useMutation: To handle the asynchronous room creation API call.
->>>>>>> local
  */
 function Lobby() {
   // Hook to get the current user's anonymous username (generated via Datamuse API and nanoid)
@@ -80,17 +71,12 @@ function Lobby() {
   // Get any error type from URL params (e.g., 'room-not-found', 'room-full')
   const error = searchParams.get("error");
 
-<<<<<<< HEAD
   /**
    * Mutation to create a new chat room.
    * On success, navigates to the newly created room.
    *
    * @see {@link client.room.create.post} - API endpoint for room creation
    */
-=======
-  // Mutation to create a new room using TanStack Query
-  // Calls the API endpoint to create a room and navigates to it on success
->>>>>>> local
   const { mutate: createRoom } = useMutation({
     mutationFn: async () => {
       // Make a POST request to the room creation endpoint via the type-safe client
